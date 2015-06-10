@@ -1,22 +1,14 @@
 package com.example.android.spotifystreamer;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.text.format.Time;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -37,66 +29,65 @@ import java.util.List;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class TracksActivityFragment extends Fragment {
 
-    private ArtistAdapter mArtistAdapter;
+    private TrackAdapter mTrackAdapter;
 
-    public MainActivityFragment() {
-        new FetchArtistsTask().execute("Coldplay");
+    public TracksActivityFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        Intent intent = getActivity().getIntent();
+        View rootView = inflater.inflate(R.layout.fragment_tracks, container, false);
+        String artist_id = "";
+        if (intent != null && intent.getStringExtra("artist") != null) {
+            artist_id = intent.getStringExtra("artist");
+        }
 
+        mTrackAdapter = new TrackAdapter(getActivity().getApplicationContext(), R.layout.list_item_track);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_tracks);
+        listView.setAdapter(mTrackAdapter);
 
-        mArtistAdapter = new ArtistAdapter(getActivity().getApplicationContext(), R.layout.list_item_track);
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_artists);
-
-        listView.setAdapter(mArtistAdapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Artist artist = (Artist)mArtistAdapter.getItem(position);
-                Intent tracksIntent = new Intent(getActivity(), TracksActivity.class);
-
-                tracksIntent.putExtra("artist", artist.getId());
-                startActivity(tracksIntent);
-            }
-        });
+        new FetchTracksTask().execute(artist_id);
 
         return rootView;
     }
 
-    private List<Artist> getArtistDataFromJson(String artistsJsonStr)
-    throws JSONException {
-        // These are the names of the JSON objects that need to be extracted.
-        final String OWM_OBJ = "artists";
+    private List<Track> getTracksDataFromJson(String tracksJsonStr)
+            throws JSONException {
 
-        final String OWM_ITEMS = "items";
+        // These are the names of the JSON objects that need to be extracted.
+        final String OWM_OBJ = "tracks";
+
+        final String OWM_ALBUM = "album";
+        final String OWM_NAME = "name";
         final String OWM_IMAGES = "images";
 
-        JSONObject artistsJson = new JSONObject(artistsJsonStr);
-        JSONArray itemsArray = artistsJson.getJSONObject(OWM_OBJ).getJSONArray(OWM_ITEMS);
+        JSONObject tracksJson = new JSONObject(tracksJsonStr);
+        JSONArray tracksArray = tracksJson.getJSONArray(OWM_OBJ);
 
-        List<Artist> artists = new ArrayList<Artist>();
+        List<Track> tracks = new ArrayList<Track>();
 
-        for (int i = 0; i < itemsArray.length(); i++) {
-            JSONObject artist = itemsArray.getJSONObject(i);
-            JSONArray images = artist.getJSONArray(OWM_IMAGES);
+        for (int i = 0; i < tracksArray.length(); i++) {
+            JSONObject track = tracksArray.getJSONObject(i);
+
+            JSONArray images = track.getJSONObject(OWM_ALBUM).getJSONArray(OWM_IMAGES);
             String imgUrl = images.length() == 0 ? "" : images.getJSONObject(0).getString("url");
-            artists.add(new Artist(artist.getString("id"), artist.getString("name"), imgUrl));
+
+            tracks.add(new Track(track.getString("id"), track.getString(OWM_NAME), imgUrl, track.getJSONObject(OWM_ALBUM).getString(OWM_NAME)));
         }
 
-        return artists;
+        return tracks;
+
     }
 
-    private class FetchArtistsTask extends AsyncTask<String, Void, List<Artist>> {
+    public class FetchTracksTask extends AsyncTask<String, Void, List<Track>> {
+
         @Override
-        protected List<Artist> doInBackground(String... params) {
+        protected List<Track> doInBackground(String... params) {
 
             if (params.length == 0) {
                 return null;
@@ -107,7 +98,7 @@ public class MainActivityFragment extends Fragment {
             BufferedReader reader = null;
 
             // Will contain the raw JSON response as a string.
-            String artistsJsonStr = null;
+            String tracksJsonStr = null;
 
             try {
 
@@ -115,9 +106,11 @@ public class MainActivityFragment extends Fragment {
                 builder.scheme("https")
                         .authority("api.spotify.com")
                         .appendPath("v1")
-                        .appendPath("search")
-                        .appendQueryParameter("q", params[0])
-                        .appendQueryParameter("type", "artist");
+                        .appendPath("artists")
+                        .appendPath(params[0])
+                        .appendPath("top-tracks")
+                        .appendQueryParameter("country", "FR")
+                        .appendQueryParameter("limit", "4");
                 String myUrl = builder.build().toString();
                 Log.i("URL", myUrl);
                 URL url = new URL(myUrl);
@@ -147,7 +140,7 @@ public class MainActivityFragment extends Fragment {
                     // Stream was empty.  No point in parsing.
                     return null;
                 }
-                artistsJsonStr = buffer.toString();
+                tracksJsonStr = buffer.toString();
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
                 return null;
@@ -167,7 +160,8 @@ public class MainActivityFragment extends Fragment {
                 }
             }
             try {
-                return getArtistDataFromJson(artistsJsonStr);
+                List<Track> tracks = getTracksDataFromJson(tracksJsonStr);
+                return tracks;
             } catch (JSONException e) {
                 Log.e("LOG", e.getMessage(), e);
                 e.printStackTrace();
@@ -176,14 +170,13 @@ public class MainActivityFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(List<Artist> result) {
+        protected void onPostExecute(List<Track> result) {
             if (result != null) {
-                for (Artist artist : result) {
-                    mArtistAdapter.add(artist);
+                mTrackAdapter.clear();
+                for (Track track : result) {
+                    mTrackAdapter.add(track);
                 }
             }
         }
     }
-
-
 }
