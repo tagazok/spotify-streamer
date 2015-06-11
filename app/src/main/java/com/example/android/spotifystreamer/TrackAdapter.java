@@ -14,6 +14,8 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import kaaes.spotify.webapi.android.models.Track;
+
 /**
  * Created by olivier on 09/06/15.
  * Got help from https://www.youtube.com/watch?v=DzpwvZ4S27g
@@ -67,17 +69,17 @@ public class TrackAdapter extends ArrayAdapter {
 
         Track track;
         track = (Track)this.getItem(position);
-        //handler.img = track.getImgUrl();
-        if (track.getImgUrl() != "") {
+
+        if (!track.album.images.isEmpty()) {
             Picasso.with(this.getContext())
-                    .load(track.getImgUrl())
+                    .load(track.album.images.get(0).url)
                     .into(handler.img);
         }
-        //handler.img.setImageURI(Uri.parse(track.getImgUrl()));
-        handler.album.setText(track.getAlbum());
-        handler.name.setText(track.getTitle());
+
+        handler.album.setText(track.album.name);
+        handler.name.setText(track.name);
 
         return row;
-        //return super.getView(position, convertView, parent);
+
     }
 }

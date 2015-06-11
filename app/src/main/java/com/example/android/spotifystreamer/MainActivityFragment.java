@@ -32,6 +32,21 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+
+import javax.security.auth.callback.Callback;
+
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyCallback;
+import kaaes.spotify.webapi.android.SpotifyError;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.AlbumsPager;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
+import kaaes.spotify.webapi.android.models.Pager;
+import kaaes.spotify.webapi.android.models.SavedTrack;
+import retrofit.client.Response;
 
 
 /**
@@ -42,6 +57,7 @@ public class MainActivityFragment extends Fragment {
     private ArtistAdapter mArtistAdapter;
 
     public MainActivityFragment() {
+
         new FetchArtistsTask().execute("Coldplay");
     }
 
@@ -58,40 +74,18 @@ public class MainActivityFragment extends Fragment {
         listView.setAdapter(mArtistAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Artist artist = (Artist)mArtistAdapter.getItem(position);
+                Artist artist = (Artist) mArtistAdapter.getItem(position);
                 Intent tracksIntent = new Intent(getActivity(), TracksActivity.class);
 
-                tracksIntent.putExtra("artist", artist.getId());
+                tracksIntent.putExtra("artist", artist.id);
                 startActivity(tracksIntent);
             }
         });
 
         return rootView;
-    }
-
-    private List<Artist> getArtistDataFromJson(String artistsJsonStr)
-    throws JSONException {
-        // These are the names of the JSON objects that need to be extracted.
-        final String OWM_OBJ = "artists";
-
-        final String OWM_ITEMS = "items";
-        final String OWM_IMAGES = "images";
-
-        JSONObject artistsJson = new JSONObject(artistsJsonStr);
-        JSONArray itemsArray = artistsJson.getJSONObject(OWM_OBJ).getJSONArray(OWM_ITEMS);
-
-        List<Artist> artists = new ArrayList<Artist>();
-
-        for (int i = 0; i < itemsArray.length(); i++) {
-            JSONObject artist = itemsArray.getJSONObject(i);
-            JSONArray images = artist.getJSONArray(OWM_IMAGES);
-            String imgUrl = images.length() == 0 ? "" : images.getJSONObject(0).getString("url");
-            artists.add(new Artist(artist.getString("id"), artist.getString("name"), imgUrl));
-        }
-
-        return artists;
     }
 
     private class FetchArtistsTask extends AsyncTask<String, Void, List<Artist>> {
@@ -101,78 +95,12 @@ public class MainActivityFragment extends Fragment {
             if (params.length == 0) {
                 return null;
             }
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
 
-            // Will contain the raw JSON response as a string.
-            String artistsJsonStr = null;
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService mSpotifyService = api.getService();
+            ArtistsPager artistsPager = mSpotifyService.searchArtists(params[0]);
 
-            try {
-
-                Uri.Builder builder = new Uri.Builder();
-                builder.scheme("https")
-                        .authority("api.spotify.com")
-                        .appendPath("v1")
-                        .appendPath("search")
-                        .appendQueryParameter("q", params[0])
-                        .appendQueryParameter("type", "artist");
-                String myUrl = builder.build().toString();
-                Log.i("URL", myUrl);
-                URL url = new URL(myUrl);
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                artistsJsonStr = buffer.toString();
-            } catch (IOException e) {
-                Log.e("PlaceholderFragment", "Error ", e);
-                return null;
-            } catch (Exception e) {
-                Log.e("PlaceholderFragment", "Error ", e);
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e("PlaceholderFragment", "Error closing stream", e);
-                    }
-                }
-            }
-            try {
-                return getArtistDataFromJson(artistsJsonStr);
-            } catch (JSONException e) {
-                Log.e("LOG", e.getMessage(), e);
-                e.printStackTrace();
-            }
-            return null;
+            return artistsPager.artists.items;
         }
 
         @Override
@@ -184,6 +112,5 @@ public class MainActivityFragment extends Fragment {
             }
         }
     }
-
 
 }
