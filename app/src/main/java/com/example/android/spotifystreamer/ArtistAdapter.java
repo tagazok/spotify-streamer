@@ -21,8 +21,9 @@ import kaaes.spotify.webapi.android.models.Artist;
  */
 public class ArtistAdapter extends ArrayAdapter {
 
-    List list = new ArrayList();
+    private List list = new ArrayList();
 
+    //http://stackoverflow.com/questions/14286460/how-to-clear-arrayadapter-with-custom-listview
     public ArtistAdapter(Context context, int resource) {
         super(context, resource);
     }
@@ -75,5 +76,13 @@ public class ArtistAdapter extends ArrayAdapter {
         handler.name.setText(artist.name);
 
         return row;
+    }
+
+    public List getList() {
+        return list;
+    }
+
+    public void setList(List list) {
+        this.list = list;
     }
 }

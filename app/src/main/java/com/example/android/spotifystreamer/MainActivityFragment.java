@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -31,6 +33,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -55,10 +58,11 @@ import retrofit.client.Response;
 public class MainActivityFragment extends Fragment {
 
     private ArtistAdapter mArtistAdapter;
+    private FetchArtistsTask fetchArtistTask;
 
     public MainActivityFragment() {
 
-        new FetchArtistsTask().execute("Coldplay");
+        //new FetchArtistsTask().execute("Coldplay");
     }
 
     @Override
@@ -80,8 +84,42 @@ public class MainActivityFragment extends Fragment {
                 Artist artist = (Artist) mArtistAdapter.getItem(position);
                 Intent tracksIntent = new Intent(getActivity(), TracksActivity.class);
 
-                tracksIntent.putExtra("artist", artist.id);
+                // http://stackoverflow.com/questions/7578236/how-to-send-hashmap-value-to-another-activity-using-an-intent
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("id", artist.id);
+                params.put("name", artist.name);
+
+                tracksIntent.putExtra("artist_info", params);
                 startActivity(tracksIntent);
+            }
+        });
+
+        final EditText searchEditText = (EditText) rootView.findViewById(R.id.artist_editText);
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (fetchArtistTask != null) {
+                    fetchArtistTask.cancel(true);
+                }
+                if (searchEditText.length() == 0) {
+                    mArtistAdapter.getList().clear();
+                    mArtistAdapter.notifyDataSetChanged();
+                }
+                mArtistAdapter.getList().clear();
+                mArtistAdapter.notifyDataSetChanged();
+                fetchArtistTask = new FetchArtistsTask();
+                fetchArtistTask.execute(searchEditText.getText().toString());
             }
         });
 
@@ -109,6 +147,7 @@ public class MainActivityFragment extends Fragment {
                 for (Artist artist : result) {
                     mArtistAdapter.add(artist);
                 }
+                mArtistAdapter.notifyDataSetChanged();
             }
         }
     }

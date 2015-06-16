@@ -51,7 +51,9 @@ public class TracksActivityFragment extends Fragment {
 
         Intent intent = getActivity().getIntent();
         View rootView = inflater.inflate(R.layout.fragment_tracks, container, false);
-        String artist_id = "";
+        HashMap<String, String> params = (HashMap<String, String>)intent.getSerializableExtra("artist_info");
+        String artist_id = params.get("id");
+
         if (intent != null && intent.getStringExtra("artist") != null) {
             artist_id = intent.getStringExtra("artist");
         }

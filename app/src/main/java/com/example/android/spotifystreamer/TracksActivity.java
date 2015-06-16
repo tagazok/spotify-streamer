@@ -1,9 +1,14 @@
 package com.example.android.spotifystreamer;
 
+import android.app.ActionBar;
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.util.HashMap;
 
 
 public class TracksActivity extends ActionBarActivity {
@@ -12,6 +17,13 @@ public class TracksActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracks);
+
+        Intent intent = getIntent();
+        HashMap<String, String> params = (HashMap<String, String>)intent.getSerializableExtra("artist_info");
+
+        // http://stackoverflow.com/questions/14297178/setting-action-bar-title-and-subtitle
+        // http://stackoverflow.com/questions/6867076/getactionbar-returns-null
+        getSupportActionBar().setSubtitle(params.get("name"));
     }
 
 
