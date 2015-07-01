@@ -30,7 +30,8 @@ public class TracksActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_tracks, menu);
+        // Maybe used in Stage 2 of the project
+        //getMenuInflater().inflate(R.menu.menu_tracks, menu);
         return true;
     }
 

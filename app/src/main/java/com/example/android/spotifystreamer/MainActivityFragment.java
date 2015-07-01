@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -115,6 +116,7 @@ public class MainActivityFragment extends Fragment {
                 if (searchEditText.length() == 0) {
                     mArtistAdapter.getList().clear();
                     mArtistAdapter.notifyDataSetChanged();
+                    return;
                 }
                 mArtistAdapter.getList().clear();
                 mArtistAdapter.notifyDataSetChanged();
@@ -144,6 +146,12 @@ public class MainActivityFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Artist> result) {
             if (result != null) {
+                if (result.size() == 0) {
+                    Toast toast = Toast.makeText(getActivity(), "Artist not found. Please refine search", Toast.LENGTH_SHORT);
+                    toast.show();
+                    return;
+                }
+
                 for (Artist artist : result) {
                     mArtistAdapter.add(artist);
                 }
