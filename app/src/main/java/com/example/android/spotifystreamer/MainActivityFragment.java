@@ -63,7 +63,6 @@ public class MainActivityFragment extends Fragment {
 
     public MainActivityFragment() {
 
-        //new FetchArtistsTask().execute("Coldplay");
     }
 
     @Override
