@@ -27,6 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <SeekBar
+        android:id="@+id/duration_seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <LinearLayout
@@ -35,6 +36,7 @@
         android:orientation="horizontal"
         >
         <TextView
+            android:id="@+id/current_duration"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:layout_weight="1"
@@ -59,9 +61,18 @@
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_media_previous"/>
         <ImageButton
+            android:id="@+id/button_play"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_media_play"/>
+            android:src="@android:drawable/ic_media_play"
+            android:onClick=""/>
+        <ImageButton
+            android:id="@+id/button_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_media_pause"
+            android:visibility="gone"
+            android:onClick=""/>
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

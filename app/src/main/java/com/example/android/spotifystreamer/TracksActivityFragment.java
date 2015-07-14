@@ -79,10 +79,14 @@ public class TracksActivityFragment extends Fragment {
                 params_player.put("track_name", track.name);
                 params_player.put("track_duration", Objects.toString(track.duration_ms, "0"));
                 params_player.put("artist_name", params.get("name"));
+                params_player.put("preview_url", track.preview_url);
 
                 playerIntent.putExtra("infos", params_player);
 
                 startActivity(playerIntent);
+                /*PlayingFragment newFragment = new PlayingFragment();
+
+                newFragment.show(getFragmentManager(), "playing");*/
             }
         });
 
