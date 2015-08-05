@@ -1,17 +1,40 @@
 package com.example.android.spotifystreamer;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.HashMap;
 
-public class MainActivity extends ActionBarActivity {
+import kaaes.spotify.webapi.android.models.Artist;
+
+
+public class MainActivity extends ActionBarActivity implements MainActivityFragment.Callback {
+
+    private boolean mTwoPane;
+    private static final String TRACKSFRAGMENT_TAG = "TFTAG";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if(findViewById(R.id.fragment_tracks) != null) {
+            mTwoPane = true;
+
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_tracks, new TracksActivityFragment(), TRACKSFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            mTwoPane = false;
+        }
     }
 
 
@@ -36,5 +59,36 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemSelected(Artist artist) {
+        if (mTwoPane) {
+            Bundle args = new Bundle();
+            //args.putParcelable(TracksActivityFragment.TRACKS_URI, uri);
+
+            //HashMap<String, String> params = new HashMap<String, String>();
+            args.putString("id", artist.id);
+            args.putString("name", artist.name);
+
+
+            TracksActivityFragment fragment = new TracksActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_tracks, fragment, TRACKSFRAGMENT_TAG)
+                    .commit();
+        } else {
+
+            // http://stackoverflow.com/questions/7578236/how-to-send-hashmap-value-to-another-activity-using-an-intent
+            HashMap<String, String> params = new HashMap<String, String>();
+            params.put("id", artist.id);
+            params.put("name", artist.name);
+
+            Intent tracksIntent = new Intent(this, TracksActivity.class);
+            tracksIntent.putExtra("artist_info", params);
+
+            startActivity(tracksIntent);
+        }
     }
 }

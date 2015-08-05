@@ -16,14 +16,31 @@ public class TracksActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tracks);
+        setContentView(R.layout.activity_details);
 
-        Intent intent = getIntent();
-        HashMap<String, String> params = (HashMap<String, String>)intent.getSerializableExtra("artist_info");
 
         // http://stackoverflow.com/questions/14297178/setting-action-bar-title-and-subtitle
         // http://stackoverflow.com/questions/6867076/getactionbar-returns-null
-        getSupportActionBar().setSubtitle(params.get("name"));
+
+        if (savedInstanceState == null) {
+            // Create the detail fragment and add it to the activity
+            // using a fragment transaction.
+
+            Intent intent = getIntent();
+            HashMap<String, String> params = (HashMap<String, String>)intent.getSerializableExtra("artist_info");
+
+            Bundle args = new Bundle();
+
+            args.putString("id", params.get("id"));
+            args.putString("name", params.get("name"));
+
+            TracksActivityFragment fragment = new TracksActivityFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_tracks, fragment)
+                    .commit();
+        }
     }
 
 
