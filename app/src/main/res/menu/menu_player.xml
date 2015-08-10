@@ -1,7 +1,13 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.android.spotifystreamer.PlayerActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+
+<menu
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto">
+
+<item
+    android:id="@+id/action_share_current_track"
+    android:icon="@android:drawable/ic_menu_share"
+    android:title="Share"
+    android:orderInCategory="100"
+    app:showAsAction="always|withText"/>
+
 </menu>
