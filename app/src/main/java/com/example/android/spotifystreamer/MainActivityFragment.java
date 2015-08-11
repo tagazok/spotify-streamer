@@ -47,6 +47,7 @@ public class MainActivityFragment extends Fragment {
     private boolean search_finished = false;
     private View rootView;
 
+    private EditText searchEditText;
     private ListView mListView;
 
     public MainActivityFragment() {
@@ -90,35 +91,9 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
-        final EditText searchEditText = (EditText) rootView.findViewById(R.id.artist_editText);
+        searchEditText = (EditText) rootView.findViewById(R.id.artist_editText);
 
-        searchEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.v("wtf", "arf");
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (fetchArtistTask != null) {
-                    fetchArtistTask.cancel(true);
-                }
-                if (searchEditText.length() == 0) {
-                    mArtistAdapter.getList().clear();
-                    mArtistAdapter.notifyDataSetChanged();
-                    return;
-                }
-                mArtistAdapter.getList().clear();
-                mArtistAdapter.notifyDataSetChanged();
-                fetchArtistTask = new FetchArtistsTask();
-                fetchArtistTask.execute(searchEditText.getText().toString());
-            }
-        });
 
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
             mPosition = savedInstanceState.getInt(SELECTED_KEY);
@@ -190,14 +165,43 @@ public class MainActivityFragment extends Fragment {
         mArtistAdapter.setList(artists);
     }
 
+    protected TextWatcher mTextWatcher = new TextWatcher() {
+
+        @Override
+        public void afterTextChanged(Editable s) {
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (fetchArtistTask != null) {
+                fetchArtistTask.cancel(true);
+            }
+            if (searchEditText.length() == 0) {
+                mArtistAdapter.getList().clear();
+                mArtistAdapter.notifyDataSetChanged();
+                return;
+            }
+            mArtistAdapter.getList().clear();
+            mArtistAdapter.notifyDataSetChanged();
+            fetchArtistTask = new FetchArtistsTask();
+            fetchArtistTask.execute(searchEditText.getText().toString());
+        }
+    };
+
+    // https://discussions.udacity.com/t/orientation-change-savedinstancestate-and-textchangedlistener/28591
+    @Override
+    public void onPause() {
+        super.onPause();
+        searchEditText.removeTextChangedListener(mTextWatcher);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        if (!search_finished) {
-
-            fetchArtistTask = new FetchArtistsTask();
-            EditText searchEditText = (EditText) rootView.findViewById(R.id.artist_editText);
-            fetchArtistTask.execute(searchEditText.getText().toString());
-        }
+        searchEditText.addTextChangedListener(mTextWatcher);
     }
 }
