@@ -22,7 +22,7 @@ import kaaes.spotify.webapi.android.models.Track;
  */
 public class TrackAdapter extends ArrayAdapter {
 
-    List list = new ArrayList();
+    private List list = new ArrayList();
 
     public TrackAdapter(Context context, int resource) {
         super(context, resource);
@@ -81,5 +81,13 @@ public class TrackAdapter extends ArrayAdapter {
 
         return row;
 
+    }
+
+    public List getList() {
+        return list;
+    }
+
+    public void setList(List list) {
+        this.list = list;
     }
 }

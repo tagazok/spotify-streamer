@@ -15,12 +15,17 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 
@@ -39,27 +44,44 @@ public class TracksActivityFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_tracks, container, false);
 
-        Bundle arguments = getArguments();
-        if (arguments == null) {
-            return rootView;
+        mTrackAdapter = new TrackAdapter(getActivity().getApplicationContext(), R.layout.list_item_track);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_tracks);
+
+        if (savedInstanceState != null) {
+            Type type = new TypeToken<List<Track>>() {
+            }.getType();
+
+            List<Artist> tracks = new Gson().fromJson(savedInstanceState.getString("saved_artists_array"), type);
+            mTrackAdapter.setList(tracks);
+        } else {
+
+            Bundle arguments = getArguments();
+            if (arguments == null) {
+                return rootView;
+            }
+
+            String artist_id = null;
+
+            if (arguments != null) {
+                artist_id = arguments.getString("id");
+            }
+
+            new FetchTracksTask().execute(artist_id);
         }
 
-        String artist_id = null;
-
-        if (arguments != null) {
-            artist_id = arguments.getString("id");
-            System.out.println("houlala");
-        }
         Intent intent = new Intent(getActivity(), MusicService.class);
         getActivity().bindService(intent, Mconnection, Context.BIND_AUTO_CREATE);
 
-        mTrackAdapter = new TrackAdapter(getActivity().getApplicationContext(), R.layout.list_item_track);
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_tracks);
         listView.setAdapter(mTrackAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -84,8 +106,6 @@ public class TracksActivityFragment extends Fragment {
                 }
             }
         });
-
-        new FetchTracksTask().execute(artist_id);
 
         return rootView;
     }
@@ -133,5 +153,11 @@ public class TracksActivityFragment extends Fragment {
                 }
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("saved_artists_array", new Gson().toJson(mTrackAdapter.getList()));
     }
 }

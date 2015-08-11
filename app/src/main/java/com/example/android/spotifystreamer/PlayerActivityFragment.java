@@ -66,7 +66,7 @@ public class PlayerActivityFragment extends DialogFragment {
 
         progressBar = ((SeekBar) rootView.findViewById(R.id.duration_seekbar));
         track_position = arguments.getInt("track_position");
-        progressBar.setProgress(0);
+
 
         button_play.setVisibility(View.GONE);
         button_pause.setVisibility(View.VISIBLE);
@@ -194,10 +194,13 @@ public class PlayerActivityFragment extends DialogFragment {
             myService = localService.getService();
             isBind = true;
             updateUI(myService.getList().get(track_position));
-            myService.setSong(track_position);
-            myService.playSong();
+            if (!myService.getPlayer().isPlaying()) {
+                myService.setSong(track_position);
+                myService.playSong();
+            }
             progressBar.setMax(myService.getPlayer().getDuration());
             mHandler.post(updateSeekBarTime);
+            progressBar.setProgress(myService.getPlayer().getCurrentPosition());
         }
 
         @Override
