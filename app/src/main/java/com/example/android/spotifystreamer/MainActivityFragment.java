@@ -1,10 +1,13 @@
 package com.example.android.spotifystreamer;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -46,6 +49,7 @@ public class MainActivityFragment extends Fragment {
     private static final String SELECTED_KEY = "selected_position";
     private boolean search_finished = false;
     private View rootView;
+    private MusicService myService;
 
     private EditText searchEditText;
     private ListView mListView;
@@ -77,6 +81,9 @@ public class MainActivityFragment extends Fragment {
             mArtistAdapter.setList(artists);
         }
         mListView.setAdapter(mArtistAdapter);
+
+        Intent intent = new Intent(getActivity(), MusicService.class);
+        getActivity().bindService(intent, Mconnection, Context.BIND_AUTO_CREATE);
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -204,4 +211,18 @@ public class MainActivityFragment extends Fragment {
         super.onResume();
         searchEditText.addTextChangedListener(mTextWatcher);
     }
+
+
+    private ServiceConnection Mconnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.MusicBinder localService = (MusicService.MusicBinder) service;
+            myService = localService.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 }

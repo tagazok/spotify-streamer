@@ -216,16 +216,18 @@ public class PlayerActivityFragment extends DialogFragment {
 
     private Runnable updateSeekBarTime = new Runnable() {
         public void run() {
-            progressBar.setMax(myService.getPlayer().getDuration());
-            progressBar.setProgress(myService.getPlayer().getCurrentPosition());
-            int position = myService.getPlayer().getCurrentPosition();
-            currentDuration.setText(String.format("%02d:%02d",
-                    TimeUnit.MILLISECONDS.toMinutes(position) -
-                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(position)),
-                    TimeUnit.MILLISECONDS.toSeconds(position) -
-                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(position))));
+            try {
+                progressBar.setMax(myService.getPlayer().getDuration());
+                progressBar.setProgress(myService.getPlayer().getCurrentPosition());
+                int position = myService.getPlayer().getCurrentPosition();
+                currentDuration.setText(String.format("%02d:%02d",
+                        TimeUnit.MILLISECONDS.toMinutes(position) -
+                                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(position)),
+                        TimeUnit.MILLISECONDS.toSeconds(position) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(position))));
 
-            mHandler.postDelayed(updateSeekBarTime, 1000);
+                mHandler.postDelayed(updateSeekBarTime, 1000);
+            } catch(Exception e) {}
         }
     };
 
