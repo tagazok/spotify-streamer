@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.util.concurrent.TimeUnit;
@@ -65,7 +66,11 @@ public class PlayerActivityFragment extends DialogFragment {
         button_next = (ImageButton) rootView.findViewById(R.id.button_next);
 
         progressBar = ((SeekBar) rootView.findViewById(R.id.duration_seekbar));
-        track_position = arguments.getInt("track_position");
+        if (savedInstanceState != null) {
+            track_position = savedInstanceState.getInt("track_position");
+        } else {
+            track_position = arguments.getInt("track_position");
+        }
 
 
         button_play.setVisibility(View.GONE);
@@ -223,6 +228,12 @@ public class PlayerActivityFragment extends DialogFragment {
             mHandler.postDelayed(updateSeekBarTime, 1000);
         }
     };
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("track_position", track_position);
+    }
 
     public MusicService getMyService() {
         return myService;

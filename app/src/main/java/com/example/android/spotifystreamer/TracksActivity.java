@@ -60,7 +60,8 @@ public class TracksActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+         if( id == android.R.id.home) {
+            onBackPressed();
             return true;
         }
 

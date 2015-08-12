@@ -14,11 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.RetrofitError;
 
 
 /**
@@ -130,17 +133,22 @@ public class TracksActivityFragment extends Fragment {
         protected List<Track> doInBackground(String... params) {
 
             if (params.length == 0) {
-                return null;
+                return new ArrayList<Track>();
             }
 
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService mSpotifyService = api.getService();
-            Map<String, Object> options = new HashMap<String, Object>();
-            options.put(SpotifyService.COUNTRY, "FR");
+            try {
+                SpotifyApi api = new SpotifyApi();
+                SpotifyService mSpotifyService = api.getService();
+                Map<String, Object> options = new HashMap<String, Object>();
+                options.put(SpotifyService.COUNTRY, "FR");
 
-            Tracks tracks = mSpotifyService.getArtistTopTrack(params[0], options);
+                Tracks tracks = mSpotifyService.getArtistTopTrack(params[0], options);
 
-            return tracks.tracks;
+                return tracks.tracks;
+            } catch (
+                    RetrofitError e) {
+                return null;
+            }
         }
 
         @Override
@@ -151,6 +159,9 @@ public class TracksActivityFragment extends Fragment {
                 for (Track track : result) {
                     mTrackAdapter.add(track);
                 }
+            } else {
+                Toast toast = Toast.makeText(getActivity(), "Error - Check your data connection", Toast.LENGTH_SHORT);
+                toast.show();
             }
         }
     }
