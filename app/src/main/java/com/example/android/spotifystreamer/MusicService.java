@@ -142,7 +142,7 @@ public class MusicService extends Service implements
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             player.setDataSource(track.preview_url);
-            player.prepare();
+            player.prepareAsync();
         } catch (IOException io) {
 
         }

@@ -42,6 +42,7 @@ public class PlayerActivityFragment extends DialogFragment {
 
     private MusicService myService;
     private boolean isBind = false;
+    private boolean newSong = true;
 
     public PlayerActivityFragment() {
     }
@@ -56,6 +57,9 @@ public class PlayerActivityFragment extends DialogFragment {
 
         Intent intent = new Intent(getActivity(), MusicService.class);
 
+        if (savedInstanceState != null) {
+            newSong = false;
+        }
         getActivity().startService(intent);
         getActivity().bindService(intent, Mconnection, Context.BIND_AUTO_CREATE);
 
@@ -199,7 +203,7 @@ public class PlayerActivityFragment extends DialogFragment {
             myService = localService.getService();
             isBind = true;
             updateUI(myService.getList().get(track_position));
-            if (!myService.getPlayer().isPlaying()) {
+            if (!myService.getPlayer().isPlaying() || (newSong == true)) {
                 myService.setSong(track_position);
                 myService.playSong();
             }
